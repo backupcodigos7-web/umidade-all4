@@ -1,0 +1,1607 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>Monitor de Umidade do Solo</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+
+<style>
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+
+  margin: 0;
+
+  padding: 20px;
+
+  font-family: Arial, sans-serif;
+
+  background:
+    linear-gradient(
+      135deg,
+      #e8f5e9,
+      #f0f2f5
+    );
+
+  min-height: 100vh;
+
+}
+
+.container {
+
+  width: 100%;
+
+  max-width: 1100px;
+
+  margin: auto;
+
+  background: white;
+
+  border-radius: 20px;
+
+  padding: 25px;
+
+  box-shadow:
+    0 8px 25px
+    rgba(0,0,0,0.12);
+
+}
+
+h1 {
+
+  text-align: center;
+
+  color: #1b5e20;
+
+  margin-top: 0;
+
+  font-size: 28px;
+
+}
+
+.subtitulo {
+
+  text-align: center;
+
+  color: #777;
+
+  margin-bottom: 25px;
+
+}
+
+
+/* =========================================
+   GRID DOS VASOS
+   ========================================= */
+
+.vasos-container {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, 1fr);
+
+  gap: 25px;
+
+}
+
+
+/* =========================================
+   CARTÃO
+   ========================================= */
+
+.vaso-card {
+
+  background: #fafafa;
+
+  border-radius: 18px;
+
+  padding: 20px;
+
+  text-align: center;
+
+  box-shadow:
+    0 4px 12px
+    rgba(0,0,0,0.10);
+
+  border: 2px solid #e8e8e8;
+
+}
+
+.vaso-card h2 {
+
+  margin-top: 0;
+
+  color: #2e7d32;
+
+  font-size: 20px;
+
+}
+
+
+/* =========================================
+   VALOR
+   ========================================= */
+
+.valor {
+
+  font-size: 48px;
+
+  font-weight: bold;
+
+  color: #2e7d32;
+
+  margin: 5px 0;
+
+}
+
+.status {
+
+  font-size: 13px;
+
+  color: #666;
+
+  margin-bottom: 5px;
+
+}
+
+
+/* =========================================
+   VASO
+   ========================================= */
+
+.vaso-area {
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+  margin: 5px 0;
+
+}
+
+.vaso {
+
+  width: 230px;
+
+  height: 300px;
+
+}
+
+
+/* =========================================
+   ÁGUA
+   ========================================= */
+
+.agua {
+
+  transition:
+
+    y 1.3s ease,
+
+    height 1.3s ease,
+
+    opacity 1s ease;
+
+}
+
+.superficie {
+
+  transition:
+
+    transform 1.3s ease,
+
+    opacity 1s ease;
+
+}
+
+
+/* =========================================
+   PORCENTAGEM NO VASO
+   ========================================= */
+
+.valor-vaso {
+
+  font-size: 21px;
+
+  font-weight: bold;
+
+  fill: white;
+
+  text-anchor: middle;
+
+}
+
+
+/* =========================================
+   STATUS DO SOLO
+   ========================================= */
+
+.status-solo {
+
+  font-size: 17px;
+
+  font-weight: bold;
+
+  margin-bottom: 12px;
+
+}
+
+
+/* =========================================
+   GRÁFICO
+   ========================================= */
+
+.chart-box {
+
+  position: relative;
+
+  width: 100%;
+
+  height: 220px;
+
+}
+
+
+/* =========================================
+   RESPONSIVO
+   ========================================= */
+
+@media (max-width: 700px) {
+
+  .vasos-container {
+
+    grid-template-columns: 1fr;
+
+  }
+
+  .container {
+
+    padding: 15px;
+
+  }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+<h1>
+🌱 Monitor de Umidade do Solo
+</h1>
+
+
+<div class="subtitulo">
+Monitoramento dos 4 vasos em tempo real
+</div>
+
+
+
+<div class="vasos-container">
+
+
+<!-- =================================================
+     VASO 1
+     ================================================= -->
+
+<div class="vaso-card">
+
+<h2>🌱 Vaso 1</h2>
+
+<div class="valor"
+     id="valor1">
+--%
+</div>
+
+<div class="status"
+     id="status1">
+Carregando...
+</div>
+
+
+<div class="vaso-area">
+
+<svg
+class="vaso"
+viewBox="0 0 260 380"
+xmlns="http://www.w3.org/2000/svg">
+
+
+<defs>
+
+<clipPath id="clip1">
+
+<path d="
+M48 200
+L212 200
+L190 342
+L70 342
+Z
+"/>
+
+</clipPath>
+
+<linearGradient
+id="aguaGrad1"
+x1="0"
+y1="0"
+x2="0"
+y2="1">
+
+<stop
+offset="0%"
+stop-color="#81d4fa"/>
+
+<stop
+offset="55%"
+stop-color="#29b6f6"/>
+
+<stop
+offset="100%"
+stop-color="#0288d1"/>
+
+</linearGradient>
+
+</defs>
+
+
+<!-- planta -->
+
+<rect
+x="127"
+y="80"
+width="7"
+height="100"
+rx="4"
+fill="#388e3c"/>
+
+<ellipse
+cx="105"
+cy="105"
+rx="38"
+ry="18"
+transform="rotate(-25 105 105)"
+fill="#43a047"/>
+
+<ellipse
+cx="155"
+cy="125"
+rx="38"
+ry="18"
+transform="rotate(25 155 125)"
+fill="#2e7d32"/>
+
+<ellipse
+cx="130"
+cy="75"
+rx="32"
+ry="17"
+fill="#66bb6a"/>
+
+
+<!-- vaso -->
+
+<path
+d="
+M35 185
+L225 185
+L202 350
+Q200 360 188 360
+L72 360
+Q60 360 58 350
+Z"
+fill="#c97945"
+stroke="#8d4f2b"
+stroke-width="5"/>
+
+
+<!-- terra -->
+
+<rect
+x="45"
+y="195"
+width="170"
+height="150"
+fill="#795548"
+clip-path="url(#clip1)"/>
+
+
+<!-- água -->
+
+<rect
+id="agua1"
+class="agua"
+x="45"
+y="342"
+width="170"
+height="0"
+fill="url(#aguaGrad1)"
+opacity="0"
+clip-path="url(#clip1)"/>
+
+
+<!-- porcentagem -->
+
+<text
+id="vasoTexto1"
+class="valor-vaso"
+x="130"
+y="300">
+
+--%
+
+</text>
+
+
+<!-- borda -->
+
+<ellipse
+cx="130"
+cy="190"
+rx="98"
+ry="22"
+fill="#a85f34"
+stroke="#8d4f2b"
+stroke-width="5"/>
+
+<ellipse
+cx="130"
+cy="194"
+rx="84"
+ry="15"
+fill="#5d4037"/>
+
+</svg>
+
+</div>
+
+
+<div
+class="status-solo"
+id="solo1">
+
+Aguardando leitura...
+
+</div>
+
+
+<div class="chart-box">
+
+<canvas id="grafico1"></canvas>
+
+</div>
+
+</div>
+
+
+
+<!-- =================================================
+     VASO 2
+     ================================================= -->
+
+<div class="vaso-card">
+
+<h2>🌱 Vaso 2</h2>
+
+<div class="valor"
+     id="valor2">
+--%
+</div>
+
+<div class="status"
+     id="status2">
+Carregando...
+</div>
+
+
+<div class="vaso-area">
+
+<svg
+class="vaso"
+viewBox="0 0 260 380"
+xmlns="http://www.w3.org/2000/svg">
+
+
+<defs>
+
+<clipPath id="clip2">
+
+<path d="
+M48 200
+L212 200
+L190 342
+L70 342
+Z
+"/>
+
+</clipPath>
+
+<linearGradient
+id="aguaGrad2"
+x1="0"
+y1="0"
+x2="0"
+y2="1">
+
+<stop
+offset="0%"
+stop-color="#81d4fa"/>
+
+<stop
+offset="55%"
+stop-color="#29b6f6"/>
+
+<stop
+offset="100%"
+stop-color="#0288d1"/>
+
+</linearGradient>
+
+</defs>
+
+
+<rect
+x="127"
+y="80"
+width="7"
+height="100"
+rx="4"
+fill="#388e3c"/>
+
+<ellipse
+cx="105"
+cy="105"
+rx="38"
+ry="18"
+transform="rotate(-25 105 105)"
+fill="#43a047"/>
+
+<ellipse
+cx="155"
+cy="125"
+rx="38"
+ry="18"
+transform="rotate(25 155 125)"
+fill="#2e7d32"/>
+
+<ellipse
+cx="130"
+cy="75"
+rx="32"
+ry="17"
+fill="#66bb6a"/>
+
+
+<path
+d="
+M35 185
+L225 185
+L202 350
+Q200 360 188 360
+L72 360
+Q60 360 58 350
+Z"
+fill="#c97945"
+stroke="#8d4f2b"
+stroke-width="5"/>
+
+
+<rect
+x="45"
+y="195"
+width="170"
+height="150"
+fill="#795548"
+clip-path="url(#clip2)"/>
+
+
+<rect
+id="agua2"
+class="agua"
+x="45"
+y="342"
+width="170"
+height="0"
+fill="url(#aguaGrad2)"
+opacity="0"
+clip-path="url(#clip2)"/>
+
+
+<text
+id="vasoTexto2"
+class="valor-vaso"
+x="130"
+y="300">
+
+--%
+
+</text>
+
+
+<ellipse
+cx="130"
+cy="190"
+rx="98"
+ry="22"
+fill="#a85f34"
+stroke="#8d4f2b"
+stroke-width="5"/>
+
+<ellipse
+cx="130"
+cy="194"
+rx="84"
+ry="15"
+fill="#5d4037"/>
+
+</svg>
+
+</div>
+
+
+<div
+class="status-solo"
+id="solo2">
+
+Aguardando leitura...
+
+</div>
+
+
+<div class="chart-box">
+
+<canvas id="grafico2"></canvas>
+
+</div>
+
+</div>
+
+
+
+<!-- =================================================
+     VASO 3
+     ================================================= -->
+
+<div class="vaso-card">
+
+<h2>🌱 Vaso 3</h2>
+
+<div class="valor"
+     id="valor3">
+--%
+</div>
+
+<div class="status"
+     id="status3">
+Carregando...
+</div>
+
+
+<div class="vaso-area">
+
+<svg
+class="vaso"
+viewBox="0 0 260 380"
+xmlns="http://www.w3.org/2000/svg">
+
+
+<defs>
+
+<clipPath id="clip3">
+
+<path d="
+M48 200
+L212 200
+L190 342
+L70 342
+Z
+"/>
+
+</clipPath>
+
+<linearGradient
+id="aguaGrad3"
+x1="0"
+y1="0"
+x2="0"
+y2="1">
+
+<stop
+offset="0%"
+stop-color="#81d4fa"/>
+
+<stop
+offset="55%"
+stop-color="#29b6f6"/>
+
+<stop
+offset="100%"
+stop-color="#0288d1"/>
+
+</linearGradient>
+
+</defs>
+
+
+<rect
+x="127"
+y="80"
+width="7"
+height="100"
+rx="4"
+fill="#388e3c"/>
+
+<ellipse
+cx="105"
+cy="105"
+rx="38"
+ry="18"
+transform="rotate(-25 105 105)"
+fill="#43a047"/>
+
+<ellipse
+cx="155"
+cy="125"
+rx="38"
+ry="18"
+transform="rotate(25 155 125)"
+fill="#2e7d32"/>
+
+<ellipse
+cx="130"
+cy="75"
+rx="32"
+ry="17"
+fill="#66bb6a"/>
+
+
+<path
+d="
+M35 185
+L225 185
+L202 350
+Q200 360 188 360
+L72 360
+Q60 360 58 350
+Z"
+fill="#c97945"
+stroke="#8d4f2b"
+stroke-width="5"/>
+
+
+<rect
+x="45"
+y="195"
+width="170"
+height="150"
+fill="#795548"
+clip-path="url(#clip3)"/>
+
+
+<rect
+id="agua3"
+class="agua"
+x="45"
+y="342"
+width="170"
+height="0"
+fill="url(#aguaGrad3)"
+opacity="0"
+clip-path="url(#clip3)"/>
+
+
+<text
+id="vasoTexto3"
+class="valor-vaso"
+x="130"
+y="300">
+
+--%
+
+</text>
+
+
+<ellipse
+cx="130"
+cy="190"
+rx="98"
+ry="22"
+fill="#a85f34"
+stroke="#8d4f2b"
+stroke-width="5"/>
+
+<ellipse
+cx="130"
+cy="194"
+rx="84"
+ry="15"
+fill="#5d4037"/>
+
+</svg>
+
+</div>
+
+
+<div
+class="status-solo"
+id="solo3">
+
+Aguardando leitura...
+
+</div>
+
+
+<div class="chart-box">
+
+<canvas id="grafico3"></canvas>
+
+</div>
+
+</div>
+
+
+
+<!-- =================================================
+     VASO 4
+     ================================================= -->
+
+<div class="vaso-card">
+
+<h2>🌱 Vaso 4</h2>
+
+<div class="valor"
+     id="valor4">
+--%
+</div>
+
+<div class="status"
+     id="status4">
+Carregando...
+</div>
+
+
+<div class="vaso-area">
+
+<svg
+class="vaso"
+viewBox="0 0 260 380"
+xmlns="http://www.w3.org/2000/svg">
+
+
+<defs>
+
+<clipPath id="clip4">
+
+<path d="
+M48 200
+L212 200
+L190 342
+L70 342
+Z
+"/>
+
+</clipPath>
+
+<linearGradient
+id="aguaGrad4"
+x1="0"
+y1="0"
+x2="0"
+y2="1">
+
+<stop
+offset="0%"
+stop-color="#81d4fa"/>
+
+<stop
+offset="55%"
+stop-color="#29b6f6"/>
+
+<stop
+offset="100%"
+stop-color="#0288d1"/>
+
+</linearGradient>
+
+</defs>
+
+
+<rect
+x="127"
+y="80"
+width="7"
+height="100"
+rx="4"
+fill="#388e3c"/>
+
+<ellipse
+cx="105"
+cy="105"
+rx="38"
+ry="18"
+transform="rotate(-25 105 105)"
+fill="#43a047"/>
+
+<ellipse
+cx="155"
+cy="125"
+rx="38"
+ry="18"
+transform="rotate(25 155 125)"
+fill="#2e7d32"/>
+
+<ellipse
+cx="130"
+cy="75"
+rx="32"
+ry="17"
+fill="#66bb6a"/>
+
+
+<path
+d="
+M35 185
+L225 185
+L202 350
+Q200 360 188 360
+L72 360
+Q60 360 58 350
+Z"
+fill="#c97945"
+stroke="#8d4f2b"
+stroke-width="5"/>
+
+
+<rect
+x="45"
+y="195"
+width="170"
+height="150"
+fill="#795548"
+clip-path="url(#clip4)"/>
+
+
+<rect
+id="agua4"
+class="agua"
+x="45"
+y="342"
+width="170"
+height="0"
+fill="url(#aguaGrad4)"
+opacity="0"
+clip-path="url(#clip4)"/>
+
+
+<text
+id="vasoTexto4"
+class="valor-vaso"
+x="130"
+y="300">
+
+--%
+
+</text>
+
+
+<ellipse
+cx="130"
+cy="190"
+rx="98"
+ry="22"
+fill="#a85f34"
+stroke="#8d4f2b"
+stroke-width="5"/>
+
+<ellipse
+cx="130"
+cy="194"
+rx="84"
+ry="15"
+fill="#5d4037"/>
+
+</svg>
+
+</div>
+
+
+<div
+class="status-solo"
+id="solo4">
+
+Aguardando leitura...
+
+</div>
+
+
+<div class="chart-box">
+
+<canvas id="grafico4"></canvas>
+
+</div>
+
+</div>
+
+
+</div>
+
+</div>
+
+
+<script>
+
+
+// =====================================================
+// CONFIGURAÇÃO
+// =====================================================
+
+const username = "carolana123";
+
+
+// =====================================================
+// OS 4 FEEDS
+// =====================================================
+
+const feeds = [
+
+  "umidade",
+
+  "umidade2",
+
+  "umidade3",
+
+  "umidade4"
+
+];
+
+
+// =====================================================
+// GRÁFICOS
+// =====================================================
+
+const graficos = [
+
+  null,
+
+  null,
+
+  null,
+
+  null
+
+];
+
+
+// =====================================================
+// CRIAR GRÁFICO
+// =====================================================
+
+function criarGrafico(numero) {
+
+  const ctx =
+    document
+      .getElementById(
+        "grafico" + numero
+      )
+      .getContext("2d");
+
+
+  graficos[numero - 1] =
+
+    new Chart(
+      ctx,
+      {
+
+        type: "line",
+
+        data: {
+
+          labels: [],
+
+          datasets: [
+
+            {
+
+              label:
+                "Umidade (%)",
+
+              data: [],
+
+              borderColor:
+                "#2e7d32",
+
+              backgroundColor:
+                "rgba(46,125,50,0.15)",
+
+              fill: true,
+
+              tension: 0.3,
+
+              pointRadius: 3
+
+            }
+
+          ]
+
+        },
+
+        options: {
+
+          responsive: true,
+
+          maintainAspectRatio: false,
+
+          scales: {
+
+            x: {
+
+              title: {
+
+                display: true,
+
+                text:
+                  "Número da leitura"
+
+              }
+
+            },
+
+            y: {
+
+              min: 0,
+
+              max: 100,
+
+              title: {
+
+                display: true,
+
+                text:
+                  "Umidade (%)"
+
+              }
+
+            }
+
+          }
+
+        }
+
+      }
+
+    );
+
+}
+
+
+// =====================================================
+// ATUALIZAR VASO
+// =====================================================
+
+function atualizarVaso(
+  numero,
+  umidade
+) {
+
+
+  umidade =
+    Number(umidade);
+
+
+  if (
+    !Number.isFinite(umidade)
+  ) {
+
+    return;
+
+  }
+
+
+  umidade =
+    Math.max(
+      0,
+      Math.min(
+        100,
+        umidade
+      )
+    );
+
+
+  const agua =
+    document.getElementById(
+      "agua" + numero
+    );
+
+
+  const texto =
+    document.getElementById(
+      "vasoTexto" + numero
+    );
+
+
+  const valor =
+    document.getElementById(
+      "valor" + numero
+    );
+
+
+  const statusSolo =
+    document.getElementById(
+      "solo" + numero
+    );
+
+
+  // ---------------------------------------
+  // NÍVEL DA ÁGUA
+  // ---------------------------------------
+
+  const fundo = 342;
+
+  const alturaMaxima = 145;
+
+  const alturaAgua =
+    (umidade / 100) *
+    alturaMaxima;
+
+  const novaPosicao =
+    fundo -
+    alturaAgua;
+
+
+  agua.setAttribute(
+    "y",
+    novaPosicao
+  );
+
+
+  agua.setAttribute(
+    "height",
+    alturaAgua
+  );
+
+
+  agua.setAttribute(
+    "opacity",
+    umidade > 0
+      ? "0.78"
+      : "0"
+  );
+
+
+  // ---------------------------------------
+  // TEXTO
+  // ---------------------------------------
+
+  texto.textContent =
+    Math.round(umidade) +
+    "%";
+
+
+  if (
+    umidade > 40
+  ) {
+
+    texto.setAttribute(
+      "y",
+      novaPosicao +
+      alturaAgua / 2
+    );
+
+  } else {
+
+    texto.setAttribute(
+      "y",
+      320
+    );
+
+  }
+
+
+  // ---------------------------------------
+  // VALOR GRANDE
+  // ---------------------------------------
+
+  valor.innerText =
+    Math.round(umidade) +
+    "%";
+
+
+  // ---------------------------------------
+  // STATUS
+  // ---------------------------------------
+
+  if (
+    umidade <= 30
+  ) {
+
+    statusSolo.innerText =
+      "🌵 Solo seco";
+
+    statusSolo.style.color =
+      "#e67e22";
+
+  }
+
+  else if (
+    umidade <= 70
+  ) {
+
+    statusSolo.innerText =
+      "🌱 Umidade ideal";
+
+    statusSolo.style.color =
+      "#2e7d32";
+
+  }
+
+  else {
+
+    statusSolo.innerText =
+      "💧 Solo muito úmido";
+
+    statusSolo.style.color =
+      "#1976d2";
+
+  }
+
+}
+
+
+// =====================================================
+// BUSCAR DADOS
+// =====================================================
+
+async function buscarDados(
+  numero
+) {
+
+
+  const feed =
+    feeds[numero - 1];
+
+
+  const url =
+    `https://io.adafruit.com/api/v2/` +
+    `${username}/feeds/${feed}/data?limit=15`;
+
+
+  try {
+
+
+    const resposta =
+      await fetch(url);
+
+
+    if (
+      !resposta.ok
+    ) {
+
+      document.getElementById(
+        "status" + numero
+      ).innerText =
+        "Erro no feed";
+
+      return;
+
+    }
+
+
+    const dados =
+      await resposta.json();
+
+
+    if (
+      !dados ||
+      dados.length === 0
+    ) {
+
+      document.getElementById(
+        "status" + numero
+      ).innerText =
+        "Sem dados";
+
+      return;
+
+    }
+
+
+    // ---------------------------------------
+    // MAIS ANTIGO → MAIS NOVO
+    // ---------------------------------------
+
+    const ordenados =
+      [...dados].reverse();
+
+
+    const valores =
+      ordenados.map(
+        item =>
+          parseFloat(
+            item.value
+          )
+      );
+
+
+    // ---------------------------------------
+    // NÚMERO DAS LEITURAS
+    // ---------------------------------------
+
+    const etiquetas =
+      ordenados.map(
+        (_, indice) =>
+          indice + 1
+      );
+
+
+    // ---------------------------------------
+    // ÚLTIMO VALOR
+    // ---------------------------------------
+
+    const ultimo =
+      valores[
+        valores.length - 1
+      ];
+
+
+    // ---------------------------------------
+    // HORÁRIO
+    // ---------------------------------------
+
+    const ultimoItem =
+      ordenados[
+        ordenados.length - 1
+      ];
+
+
+    const hora =
+      new Date(
+        ultimoItem.created_at
+      ).toLocaleTimeString();
+
+
+    // ---------------------------------------
+    // ATUALIZAR VASO
+    // ---------------------------------------
+
+    atualizarVaso(
+      numero,
+      ultimo
+    );
+
+
+    // ---------------------------------------
+    // STATUS
+    // ---------------------------------------
+
+    document.getElementById(
+      "status" + numero
+    ).innerText =
+      "Atualizado às " +
+      hora;
+
+
+    // ---------------------------------------
+    // GRÁFICO
+    // ---------------------------------------
+
+    if (
+      graficos[numero - 1]
+    ) {
+
+      graficos[
+        numero - 1
+      ].data.labels =
+        etiquetas;
+
+
+      graficos[
+        numero - 1
+      ].data.datasets[0].data =
+        valores;
+
+
+      graficos[
+        numero - 1
+      ].update();
+
+    }
+
+
+  }
+
+  catch (erro) {
+
+
+    console.error(
+      "Erro no vaso " +
+      numero,
+      erro
+    );
+
+
+    document.getElementById(
+      "status" + numero
+    ).innerText =
+      "Erro de conexão";
+
+  }
+
+}
+
+
+// =====================================================
+// INICIALIZAÇÃO
+// =====================================================
+
+window.onload =
+  function() {
+
+
+    // Criar os 4 gráficos
+
+    criarGrafico(1);
+
+    criarGrafico(2);
+
+    criarGrafico(3);
+
+    criarGrafico(4);
+
+
+    // Buscar os 4 feeds
+
+    buscarDados(1);
+
+    buscarDados(2);
+
+    buscarDados(3);
+
+    buscarDados(4);
+
+
+    // Atualizar a cada 5 segundos
+
+    setInterval(
+      function() {
+
+        buscarDados(1);
+
+        buscarDados(2);
+
+        buscarDados(3);
+
+        buscarDados(4);
+
+      },
+      5000
+    );
+
+  };
+
+
+</script>
+
+
+</body>
+
+</html>
